@@ -10,8 +10,12 @@
 # along with this library; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
-import gtk
-import gobject
+#Import Gtk
+import gi
+gi.require_version('Gtk','3.0')
+from gi.repository import Gtk
+from gi.repository import Gobject
+
 import subprocess
 import os
 import time
@@ -19,29 +23,29 @@ from shutil import copyfile
 
 from math import sqrt, ceil
 
-from sugar.activity import activity
-from sugar import profile
+from sugar3.activity import activity
+from sugar3 import profile
 try:
-    from sugar.graphics.toolbarbox import ToolbarBox
+    from sugar3.graphics.toolbarbox import ToolbarBox
     HAVE_TOOLBOX = True
 except ImportError:
     HAVE_TOOLBOX = False
 
 if HAVE_TOOLBOX:
-    from sugar.activity.widgets import ActivityToolbarButton
-    from sugar.activity.widgets import StopButton
-    from sugar.graphics.toolbarbox import ToolbarButton
+    from sugar3.activity.widgets import ActivityToolbarButton
+    from sugar3.activity.widgets import StopButton
+    from sugar3.graphics.toolbarbox import ToolbarButton
 
-from sugar.datastore import datastore
-from sugar.graphics.alert import Alert
-from sugar.graphics.icon import Icon
-from sugar.graphics.xocolor import XoColor
+from sugar3.datastore import datastore
+from sugar3.graphics.alert import Alert
+from sugar3.graphics.icon import Icon
+from sugar3.graphics.xocolor import XoColor
 
 import telepathy
 from dbus.service import signal
 from dbus.gobject_service import ExportedGObject
-from sugar.presence import presenceservice
-from sugar.presence.tubeconn import TubeConnection
+from sugar3.presence import presenceservice
+from sugar3.presence.tubeconn import TubeConnection
 
 SERVICE = 'org.sugarlabs.BBoardActivity'
 IFACE = SERVICE
@@ -77,7 +81,7 @@ import logging
 _logger = logging.getLogger("bboard-activity")
 
 try:
-    from sugar.graphics import style
+    from sugar3.graphics import style
     GRID_CELL_SIZE = style.GRID_CELL_SIZE
 except ImportError:
     GRID_CELL_SIZE = 0
