@@ -11,7 +11,7 @@
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 
-import gtk
+from gi.repository import Gtk
 import os
 import subprocess
 
@@ -83,7 +83,7 @@ def lighter_color(colors):
 
 def svg_str_to_pixbuf(svg_string):
     ''' Load pixbuf from SVG string '''
-    pl = gtk.gdk.PixbufLoader('svg')
+    pl = GdkPixbuf.PixbufLoader('svg')
     pl.write(svg_string)
     pl.close()
     pixbuf = pl.get_pixbuf()
@@ -110,7 +110,7 @@ def svg_rectangle(width, height, colors):
 
 def load_svg_from_file(file_path, width, height):
     '''Create a pixbuf from SVG in a file. '''
-    return gtk.gdk.pixbuf_new_from_file_at_size(file_path, width, height)
+    return GdkPixbuf.Pixbuf.new_from_file_at_size(file_path, width, height)
 
 
 def file_to_base64(activity, path):
@@ -148,7 +148,7 @@ def base64_to_pixbuf(activity, data, width=300, height=225):
     ''' Convert base64-encoded data to a pixbuf '''
     png_file = os.path.join(get_path(activity, 'instance'), 'imagetmp.png')
     base64_to_file(activity, data, png_file)
-    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(png_file, width, height)
+    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(png_file, width, height)
     os.remove(png_file)
     return pixbuf
 
@@ -156,7 +156,7 @@ def base64_to_pixbuf(activity, data, width=300, height=225):
 def get_pixbuf_from_journal(dsobject, w, h):
     """ Load a pixbuf from a Journal object. """
     pixbufloader = \
-        gtk.gdk.pixbuf_loader_new_with_mime_type('image/png')
+        GdkPixbuf.Pixbuf.loader_new_with_mime_type('image/png')
     # pixbufloader.set_size(min(300, int(w)), min(225, int(h)))
     pixbufloader.set_size(int(w), int(h))
     try:

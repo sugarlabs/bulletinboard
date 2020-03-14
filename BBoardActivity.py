@@ -153,18 +153,18 @@ class BBoardActivity(activity.Activity):
 
     def _setup_canvas(self):
         ''' Create a canvas '''
-        self._canvas = gtk.DrawingArea()
-        self._canvas.set_size_request(int(gtk.gdk.screen_width()),
-                                      int(gtk.gdk.screen_height()))
+        self._canvas = Gtk.DrawingArea()
+        self._canvas.set_size_request(int(Gdk.Screen.width()),
+                                      int(Gdk.Screen.height()))
         self._canvas.show()
         self.set_canvas(self._canvas)
         self.show_all()
 
-        self._canvas.set_flags(gtk.CAN_FOCUS)
-        self._canvas.add_events(gtk.gdk.BUTTON_PRESS_MASK)
-        self._canvas.add_events(gtk.gdk.POINTER_MOTION_MASK)
-        self._canvas.add_events(gtk.gdk.BUTTON_RELEASE_MASK)
-        self._canvas.add_events(gtk.gdk.KEY_PRESS_MASK)
+        self._canvas.set_flags(Gtk.CAN_FOCUS)
+        self._canvas.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        self._canvas.add_events(Gdk.EventMask.POINTER_MOTION_MASK)
+        self._canvas.add_events(Gdk.EventMask.BUTTON_RELEASE_MASK)
+        self._canvas.add_events(Gdk.EventMask.KEY_PRESS_MASK)
         self._canvas.connect("expose-event", self._expose_cb)
         self._canvas.connect("button-press-event", self._button_press_cb)
         self._canvas.connect("button-release-event", self._button_release_cb)
@@ -179,9 +179,9 @@ class BBoardActivity(activity.Activity):
             self.colors[0] = self.colors[1]
             self.colors[1] = tmp
 
-        self._width = gtk.gdk.screen_width()
-        self._height = gtk.gdk.screen_height()
-        self._scale = gtk.gdk.screen_height() / 900.
+        self._width = Gdk.Screen.width()
+        self._height = Gdk.Screen.height()
+        self._scale = Gdk.Screen.height() / 900.
 
         if not HAVE_TOOLBOX and self._hw[0:2] == 'xo':
             titlef = 18
@@ -202,7 +202,7 @@ class BBoardActivity(activity.Activity):
             if 'mime_type' in ds.metadata:
                 mimetype = ds.metadata['mime_type']
             if mimetype[0:5] == 'image':
-                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
                     ds.file_path, MAXX, MAXY)
                     # ds.file_path, 300, 225)
                 media_object = True
@@ -222,7 +222,7 @@ class BBoardActivity(activity.Activity):
             self._sprites,
             int((self._width - int(PREVIEWW * self._scale)) / 2),
             int(PREVIEWY * self._scale),
-            gtk.gdk.pixbuf_new_from_file_at_size(
+            GdkPixbuf.Pixbuf.new_from_file_at_size(
                 os.path.join(activity.get_bundle_path(), 'help.png'),
                 int(PREVIEWW * self._scale), int(PREVIEWH * self._scale)))
         self._help.hide()
@@ -284,7 +284,7 @@ class BBoardActivity(activity.Activity):
             toolbox.show()
             self.toolbar = toolbox.toolbar
 
-            self.record_toolbar = gtk.Toolbar()
+            self.record_toolbar = Gtk.Toolbar()
             record_toolbar_button = ToolbarButton(
                 label=_('Record a sound'),
                 page=self.record_toolbar,
@@ -294,11 +294,11 @@ class BBoardActivity(activity.Activity):
             toolbox.toolbar.insert(record_toolbar_button, -1)
         else:
             # Use pre-0.86 toolbar design
-            primary_toolbar = gtk.Toolbar()
+            primary_toolbar = Gtk.Toolbar()
             toolbox = activity.ActivityToolbox(self)
             self.set_toolbox(toolbox)
             toolbox.add_toolbar(_('Page'), primary_toolbar)
-            self.record_toolbar = gtk.Toolbar()
+            self.record_toolbar = Gtk.Toolbar()
             toolbox.add_toolbar(_('Record'), self.record_toolbar)
             toolbox.show()
             toolbox.set_current_toolbar(1)
@@ -332,21 +332,21 @@ class BBoardActivity(activity.Activity):
             'write-journal', self.toolbar, self._do_journal_cb,
             tooltip=_('Update description'))
         self._palette = journal_button.get_palette()
-        msg_box = gtk.HBox()
+        msg_box = Gtk.HBox()
 
-        sw = gtk.ScrolledWindow()
-        sw.set_size_request(int(gtk.gdk.screen_width() / 2),
+        sw = Gtk.ScrolledWindow()
+        sw.set_size_request(int(Gdk.Screen.width() / 2),
                             2 * style.GRID_CELL_SIZE)
-        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self._text_view = gtk.TextView()
+        sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        self._text_view = Gtk.TextView()
         self._text_view.set_left_margin(style.DEFAULT_PADDING)
         self._text_view.set_right_margin(style.DEFAULT_PADDING)
-        self._text_view.set_wrap_mode(gtk.WRAP_WORD_CHAR)
+        self._text_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         self._text_view.connect('focus-out-event',
                                self._text_view_focus_out_event_cb)
         sw.add(self._text_view)
         sw.show()
-        msg_box.pack_start(sw, expand=False)
+        msg_box.pack_start(sw, False, True, 0)
         msg_box.show_all()
 
         self._palette.set_content(msg_box)
@@ -407,7 +407,7 @@ class BBoardActivity(activity.Activity):
 
     def _destroy_cb(self, win, event):
         ''' Clean up on the way out. '''
-        gtk.main_quit()
+        Gtk.main_quit()
 
     def _find_starred(self):
         ''' Find all the favorites in the Journal. '''
@@ -501,7 +501,7 @@ class BBoardActivity(activity.Activity):
             self._preview.set_shape(pixbuf.scale_simple(
                     int(PREVIEWW * self._scale),
                     int(PREVIEWH * self._scale),
-                    gtk.gdk.INTERP_NEAREST))
+                    GdkPixbuf.InterpType.NEAREST))
             self._preview.set_layer(MIDDLE)
         else:
             if self._preview is not None:
@@ -513,7 +513,7 @@ class BBoardActivity(activity.Activity):
         if self.slides[self.i].desc is not None:
             self._description.set_label(self.slides[self.i].desc)
             self._description.set_layer(MIDDLE)
-            text_buffer = gtk.TextBuffer()
+            text_buffer = Gtk.TextBuffer()
             text_buffer.set_text(self.slides[self.i].desc)
             self._text_view.set_buffer(text_buffer)
         else:
@@ -574,7 +574,7 @@ class BBoardActivity(activity.Activity):
         pixbuf = self.slides[i].pixbuf
         if pixbuf is not None:
             pixbuf_thumb = pixbuf.scale_simple(
-                int(w), int(h), gtk.gdk.INTERP_TILES)
+                int(w), int(h), GdkPixbuf.InterpType.TILES)
         else:
             pixbuf_thumb = svg_str_to_pixbuf(
                 genblank(int(w), int(h), self.slides[i].colors))
@@ -620,7 +620,7 @@ class BBoardActivity(activity.Activity):
     def invalt(self, x, y, w, h):
         ''' Mark a region for refresh '''
         self._canvas.window.invalidate_rect(
-            gtk.gdk.Rectangle(int(x), int(y), int(w), int(h)), False)
+            (int(x), int(y), int(w), int(h)), False)
 
     def _spr_to_thumb(self, spr):
         ''' Find which entry in the thumbnails table matches spr. '''
@@ -729,7 +729,7 @@ class BBoardActivity(activity.Activity):
             self._record_button.set_tooltip(_('Start recording'))
             _logger.debug('Autosaving recording')
             self._notify(title=_('Save recording'))
-            gobject.timeout_add(100, self._wait_for_transcoding_to_finish)
+            GObject.timeout_add(100, self._wait_for_transcoding_to_finish)
         else:  # Wasn't recording, so start
             _logger.debug('recording...False. Start recording.')
             self._grecord.record_audio()
@@ -1002,7 +1002,7 @@ class BBoardActivity(activity.Activity):
         if profile.get_nick_name() in self._audio_recordings:
             base64 = file_to_base64(
                     activity, self._audio_recordings[profile.get_nick_name()])
-            gobject.idle_add(self._send_event, 'a:' + str(
+            GObject.idle_add(self._send_event, 'a:' + str(
                     self._data_dumper([profile.get_nick_name(),
                                        self.colors,
                                        base64])))
@@ -1010,7 +1010,7 @@ class BBoardActivity(activity.Activity):
     def _share_slides(self):
         for s in self.slides:
             if s.owner:  # Maybe stagger the timing of the sends?
-                gobject.idle_add(self._send_event, 's:' + str(self._dump(s)))
+                GObject.idle_add(self._send_event, 's:' + str(self._dump(s)))
         _logger.debug('finished sharing')
 
     def _send_event(self, text):
