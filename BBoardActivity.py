@@ -441,7 +441,7 @@ class BBoardActivity(activity.Activity):
         dsobject.metadata['icon-color'] = profile.get_color().to_string()
         dsobject.metadata['mime_type'] = 'application/pdf'
         dsobject.set_file_path(tmp_file)
-        dsobject.metadata['activity'] = 'org.laptop.sugar.ReadActivity'
+        dsobject.metadata['activity'] = 'org.laptop.sugar3.ReadActivity'
         datastore.write(dsobject)
         dsobject.destroy()
         return
