@@ -14,7 +14,7 @@
 import gi
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
-from gi.repository import Gobject
+from gi.repository import GObject
 
 import subprocess
 import os
@@ -123,7 +123,7 @@ class BBoardActivity(activity.Activity):
 
     def __init__(self, handle):
         ''' Initialize the toolbars and the work surface '''
-        super(BBoardActivity, self).__init__(handle)
+        #super(BBoardActivity, self).__init__(handle)
 
         self.datapath = get_path(activity, 'instance')
 

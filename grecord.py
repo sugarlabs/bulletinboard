@@ -21,8 +21,10 @@
 
 import os
 import time
+import gi
 
 from gi.repository import Gtk
+gi.require_version('Gst', '1.0')
 from gi.repository import Gst
 
 import logging

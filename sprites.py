@@ -80,7 +80,8 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Pango
-import pangocairo
+gi.require_version('PangoCairo', '1.0')
+from gi.repository import PangoCairo
 import cairo
 
 class Sprites:

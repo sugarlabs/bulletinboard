@@ -14,12 +14,12 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from glib import GError
+from gi.repository import GLib
 import os.path
 import time
 import cairo
 from gi.repository import Pango
-import pangocairo
+from gi.repository import PangoCairo
 from gettext import gettext as _
 
 from utils import get_pixbuf_from_journal
