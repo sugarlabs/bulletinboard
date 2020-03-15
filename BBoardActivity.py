@@ -13,8 +13,10 @@
 #Import Gtk
 import gi
 gi.require_version('Gtk','3.0')
+gi.require_version('TelepathyGLib', '0.12')
 from gi.repository import Gtk
 from gi.repository import GObject
+from gi.repository import TelepathyGLib
 
 import subprocess
 import os
@@ -41,9 +43,9 @@ from sugar3.graphics.alert import Alert
 from sugar3.graphics.icon import Icon
 from sugar3.graphics.xocolor import XoColor
 
-import telepathy
+#import telepathy
 from dbus.service import signal
-from dbus.gobject_service import ExportedGObject
+#from dbus.gobject_service import ExportedGObject
 from sugar3.presence import presenceservice
 from sugar3.presence.tubeconn import TubeConnection
 
@@ -123,7 +125,7 @@ class BBoardActivity(activity.Activity):
 
     def __init__(self, handle):
         ''' Initialize the toolbars and the work surface '''
-        #super(BBoardActivity, self).__init__(handle)
+        super(BBoardActivity, self).__init__(handle)
 
         self.datapath = get_path(activity, 'instance')
 
