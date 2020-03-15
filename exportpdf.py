@@ -85,7 +85,7 @@ def show_text(cr, fd, label, size, x, y):
     pl = cr.create_layout()
     fd.set_size(int(size * Pango.SCALE))
     pl.set_font_description(fd)
-    if type(label) == str or type(label) == unicode:
+    if type(label) == str or type(label) == str:
         pl.set_text(label.replace('\0', ' '))
     else:
         pl.set_text(str(label))

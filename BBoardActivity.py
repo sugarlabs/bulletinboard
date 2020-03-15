@@ -65,7 +65,7 @@ except(ImportError, AttributeError):
         from simplejson import dump as jdump
     except ImportError:
         _OLD_SUGAR_SYSTEM = True
-from StringIO import StringIO
+from io import StringIO
 
 from sprites import Sprites, Sprite
 from exportpdf import save_pdf
@@ -641,7 +641,7 @@ class BBoardActivity(activity.Activity):
     def _button_press_cb(self, win, event):
         ''' The mouse button was pressed. Is it on a thumbnail sprite? '''
         win.grab_focus()
-        x, y = map(int, event.get_coords())
+        x, y = list(map(int, event.get_coords()))
 
         self._dragpos = [x, y]
         self._total_drag = [0, 0]
@@ -666,7 +666,7 @@ class BBoardActivity(activity.Activity):
             self._dragpos = [0, 0]
             return False
         win.grab_focus()
-        x, y = map(int, event.get_coords())
+        x, y = list(map(int, event.get_coords()))
         dx = x - self._dragpos[0]
         dy = y - self._dragpos[1]
         spr.move_relative([dx, dy])
@@ -680,7 +680,7 @@ class BBoardActivity(activity.Activity):
         ''' Button event is used to swap slides or goto next slide. '''
         win.grab_focus()
         self._dragpos = [0, 0]
-        x, y = map(int, event.get_coords())
+        x, y = list(map(int, event.get_coords()))
 
         if self._thumbnail_mode:
             if self._press is None:
