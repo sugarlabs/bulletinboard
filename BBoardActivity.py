@@ -10,13 +10,10 @@
 # along with this library; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
-#Import Gtk
 import gi
 gi.require_version('Gtk','3.0')
-gi.require_version('TelepathyGLib', '0.12')
 from gi.repository import Gtk
 from gi.repository import GObject
-from gi.repository import TelepathyGLib
 
 import subprocess
 import os
@@ -43,15 +40,13 @@ from sugar3.graphics.alert import Alert
 from sugar3.graphics.icon import Icon
 from sugar3.graphics.xocolor import XoColor
 
-#import telepathy
 from dbus.service import signal
-#from dbus.gobject_service import ExportedGObject
-from sugar3.presence import presenceservice
-from sugar3.presence.tubeconn import TubeConnection
 
-SERVICE = 'org.sugarlabs.BBoardActivity'
-IFACE = SERVICE
-PATH = '/org/sugarlabs/BBoardActivity'
+try:
+	from sugar3.presence.wrapper import CollabWrapper
+	_logger.debug('CollabWrapper imported from Sugar')
+except ImportError:
+	from collabwrapper import CollabWrapper
 
 try:
     _OLD_SUGAR_SYSTEM = False
@@ -142,7 +137,7 @@ class BBoardActivity(activity.Activity):
         self._setup_workspace()
 
         self._buddies = [profile.get_nick_name()]
-        self._setup_presence_service()
+        self._setup_collab()
 
         self._thumbs = []
         self._thumbnail_mode = False
@@ -881,120 +876,46 @@ class BBoardActivity(activity.Activity):
 
     # Sharing-related methods
 
-    def _setup_presence_service(self):
-        ''' Setup the Presence Service. '''
-        self.pservice = presenceservice.get_instance()
-        self.initiating = None  # sharing (True) or joining (False)
-
-        owner = self.pservice.get_owner()
+    def _setup_collab(self):
+        '''Setting up Collab Wrapper'''
+        self.initiating = None
+        # sharing (True) or joining (False)
+        self._collab = CollabWrapper(self)
+        self._collab.connect('message', self.event_received_cb)
+        self._collab.setup()
+        
+        owner = self._collab._leader
         self.owner = owner
         self.buddies = [owner]
-        self._share = ''
-        self.connect('shared', self._shared_cb)
-        self.connect('joined', self._joined_cb)
+        
+        #Let the sharer know the joiner is available
+        if self.waiting:
+           self._send_event("j", profile.get_nick_name())
 
-    def _shared_cb(self, activity):
-        ''' Either set up initial share...'''
-        if self._shared_activity is None:
-            _logger.error('Failed to share or join activity ... \
-                _shared_activity is null in _shared_cb()')
-            return
-
-        self.initiating = True
-        self.waiting = False
-        _logger.debug('I am sharing...')
-
-        self.conn = self._shared_activity.telepathy_conn
-        self.tubes_chan = self._shared_activity.telepathy_tubes_chan
-        self.text_chan = self._shared_activity.telepathy_text_chan
-
-        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal(
-            'NewTube', self._new_tube_cb)
-
-        _logger.debug('This is my activity: making a tube...')
-        id = self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].OfferDBusTube(
-            SERVICE, {})
-
-    def _joined_cb(self, activity):
-        ''' ...or join an exisiting share. '''
-        if self._shared_activity is None:
-            _logger.error('Failed to share or join activity ... \
-                _shared_activity is null in _shared_cb()')
-            return
-
-        self.initiating = False
-        _logger.debug('I joined a shared activity.')
-
-        self.conn = self._shared_activity.telepathy_conn
-        self.tubes_chan = self._shared_activity.telepathy_tubes_chan
-        self.text_chan = self._shared_activity.telepathy_text_chan
-
-        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal(\
-            'NewTube', self._new_tube_cb)
-
-        _logger.debug('I am joining an activity: waiting for a tube...')
-        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].ListTubes(
-            reply_handler=self._list_tubes_reply_cb,
-            error_handler=self._list_tubes_error_cb)
-
-        self.waiting = True
-
-    def _list_tubes_reply_cb(self, tubes):
-        ''' Reply to a list request. '''
-        for tube_info in tubes:
-            self._new_tube_cb(*tube_info)
-
-    def _list_tubes_error_cb(self, e):
-        ''' Log errors. '''
-        _logger.error('ListTubes() failed: %s', e)
-
-    def _new_tube_cb(self, id, initiator, type, service, params, state):
-        ''' Create a new tube. '''
-        _logger.debug('New tube: ID=%d initator=%d type=%d service=%s '
-                     'params=%r state=%d', id, initiator, type, service,
-                     params, state)
-
-        if (type == telepathy.TUBE_TYPE_DBUS and service == SERVICE):
-            if state == telepathy.TUBE_STATE_LOCAL_PENDING:
-                self.tubes_chan[ \
-                              telepathy.CHANNEL_TYPE_TUBES].AcceptDBusTube(id)
-
-            tube_conn = TubeConnection(self.conn,
-                self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES], id, \
-                group_iface=self.text_chan[telepathy.CHANNEL_INTERFACE_GROUP])
-
-            self.chattube = ChatTube(tube_conn, self.initiating, \
-                self.event_received_cb)
-
-            if self.waiting:
-                self._send_event('j:%s' % (profile.get_nick_name()))
-
-    def event_received_cb(self, text):
+    def event_received_cb(self, collab, buddy, text):
         ''' Data is passed as tuples: cmd:text '''
-        _logger.debug('<<< %s' % (text[0]))
+        _logger.debug("<<< %s", text[0])
+        action= text.get('action')
+        payload= text.get('payload')
         if text[0] == 's':  # shared journal objects
-            e, data = text.split(':')
-            self._load(data)
+            self._load(payload)
         elif text[0] == 'j':  # Someone new has joined
-            e, buddy = text.split(':')
-            _logger.debug('%s has joined' % (buddy))
-            if buddy not in self._buddies:
-                self._buddies.append(buddy)
+            _logger.debug("%s has joined", payload)
+            if payload not in self._buddies:
+                self._buddies.append(payload)
             if self.initiating:
-                self._send_event('J:%s' % (profile.get_nick_name()))
+                self._send_event("j:", profile.get_nick_name())
                 self._share_slides()
                 self._share_audio()
         elif text[0] == 'J':  # Everyone must share
-            e, buddy = text.split(':')
             self.waiting = False
-            if buddy not in self._buddies:
-                self._buddies.append(buddy)
-                _logger.debug('%s has joined' % (buddy))
+            if payload not in self._buddies:
+                self._buddies.append(payload)
+                _logger.debug("%s has joined", payload)
             self._share_slides()
             self._share_audio()
         elif text[0] == 'a':  # audio recording
-            e, data = text.split(':')
-            nick, colors, base64 = self._data_loader(data)
+            nick, colors, base64 = self._data_loader(payload)
             path = os.path.join(activity.get_activity_root(),
                                 'instance', 'nick.ogg')
             base64_to_file(activity, base64, path)
@@ -1015,31 +936,12 @@ class BBoardActivity(activity.Activity):
                 GObject.idle_add(self._send_event, 's:' + str(self._dump(s)))
         _logger.debug('finished sharing')
 
-    def _send_event(self, text):
+    def _send_event(self, action, payload):
         ''' Send event through the tube. '''
-        if hasattr(self, 'chattube') and self.chattube is not None:
-            _logger.debug('>>> %s' % (text[0]))
-            self.chattube.SendText(text)
+        if hasattr(self, 'chattube') and self.collab is not None:
+            _logger.debug(">>> %s", text[0])
+            self.collab.post(dict(
+		action=action,
+		payload=payload
+	    ))
 
-
-class ChatTube(ExportedGObject):
-    ''' Class for setting up tube for sharing '''
-    def __init__(self, tube, is_initiator, stack_received_cb):
-        super(ChatTube, self).__init__(tube, PATH)
-        self.tube = tube
-        self.is_initiator = is_initiator  # Are we sharing or joining activity?
-        self.stack_received_cb = stack_received_cb
-        self.stack = ''
-
-        self.tube.add_signal_receiver(self.send_stack_cb, 'SendText', IFACE,
-                                      path=PATH, sender_keyword='sender')
-
-    def send_stack_cb(self, text, sender=None):
-        if sender == self.tube.get_unique_name():
-            return
-        self.stack = text
-        self.stack_received_cb(text)
-
-    @signal(dbus_interface=IFACE, signature='s')
-    def SendText(self, text):
-        self.stack = text
