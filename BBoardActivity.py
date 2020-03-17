@@ -46,7 +46,7 @@ try:
 	from sugar3.presence.wrapper import CollabWrapper
 	_logger.debug('CollabWrapper imported from Sugar')
 except ImportError:
-	from collabwrapper import CollabWrapper
+	from collabwrapper.collabwrapper import CollabWrapper
 
 try:
     _OLD_SUGAR_SYSTEM = False
