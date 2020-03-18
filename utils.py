@@ -11,7 +11,7 @@
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 import os
 import subprocess
 
@@ -83,8 +83,8 @@ def lighter_color(colors):
 
 def svg_str_to_pixbuf(svg_string):
     ''' Load pixbuf from SVG string '''
-    pl = GdkPixbuf.PixbufLoader('svg')
-    pl.write(svg_string)
+    pl = GdkPixbuf.PixbufLoader.new_with_type('svg')
+    pl.write(bytes(svg_string.encode()))
     pl.close()
     pixbuf = pl.get_pixbuf()
     return pixbuf
@@ -155,8 +155,7 @@ def base64_to_pixbuf(activity, data, width=300, height=225):
 
 def get_pixbuf_from_journal(dsobject, w, h):
     """ Load a pixbuf from a Journal object. """
-    pixbufloader = \
-        GdkPixbuf.Pixbuf.loader_new_with_mime_type('image/png')
+    pixbufloader = GdkPixbuf.PixbufLoader.new_with_mime_type('image/png')
     # pixbufloader.set_size(min(300, int(w)), min(225, int(h)))
     pixbufloader.set_size(int(w), int(h))
     try:

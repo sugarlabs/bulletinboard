@@ -14,6 +14,7 @@ import gi
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 from gi.repository import GObject
+from gi.repository import Gdk, GdkPixbuf
 
 import subprocess
 import os
@@ -157,15 +158,15 @@ class BBoardActivity(activity.Activity):
         self.set_canvas(self._canvas)
         self.show_all()
 
-        self._canvas.set_flags(Gtk.CAN_FOCUS)
         self._canvas.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         self._canvas.add_events(Gdk.EventMask.POINTER_MOTION_MASK)
         self._canvas.add_events(Gdk.EventMask.BUTTON_RELEASE_MASK)
         self._canvas.add_events(Gdk.EventMask.KEY_PRESS_MASK)
-        self._canvas.connect("expose-event", self._expose_cb)
+        self._canvas.connect("draw", self.__draw_cb)
         self._canvas.connect("button-press-event", self._button_press_cb)
         self._canvas.connect("button-release-event", self._button_release_cb)
         self._canvas.connect("motion-notify-event", self._mouse_move_cb)
+        self.sprites= Sprites(self._canvas)
 
     def _setup_workspace(self):
         ''' Prepare to render the datastore entries. '''
@@ -178,7 +179,7 @@ class BBoardActivity(activity.Activity):
 
         self._width = Gdk.Screen.width()
         self._height = Gdk.Screen.height()
-        self._scale = Gdk.Screen.height() / 900.
+        self._scale = Gdk.Screen.height() / 900.0
 
         if not HAVE_TOOLBOX and self._hw[0:2] == 'xo':
             titlef = 18
@@ -332,8 +333,7 @@ class BBoardActivity(activity.Activity):
         msg_box = Gtk.HBox()
 
         sw = Gtk.ScrolledWindow()
-        sw.set_size_request(int(Gdk.Screen.width() / 2),
-                            2 * style.GRID_CELL_SIZE)
+        sw.get_preferred_width_for_height(2*style.GRID_CELL_SIZE)
         sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         self._text_view = Gtk.TextView()
         self._text_view.set_left_margin(style.DEFAULT_PADDING)
@@ -399,7 +399,7 @@ class BBoardActivity(activity.Activity):
         buffer = self._text_view.get_buffer()
         start_iter = buffer.get_start_iter()
         end_iter = buffer.get_end_iter()
-        self.slides[self.i].desc = buffer.get_text(start_iter, end_iter)
+        self.slides[self.i].desc = buffer.get_text(start_iter, end_iter, False)
         self._show_slide()
 
     def _destroy_cb(self, win, event):
@@ -476,8 +476,8 @@ class BBoardActivity(activity.Activity):
         self._update_colors()
 
         if len(self.slides) == 0:
-            self._prev_button.set_icon('go-previous-inactive')
-            self._next_button.set_icon('go-next-inactive')
+            self._prev_button.set_icon_name('go-previous-inactive')
+            self._next_button.set_icon_name('go-next-inactive')
             self._description.set_label(
                 _('Do you have any items in your Journal starred?'))
             self._help.set_layer(TOP)
@@ -485,13 +485,13 @@ class BBoardActivity(activity.Activity):
             return
 
         if self.i == 0:
-            self._prev_button.set_icon('go-previous-inactive')
+            self._prev_button.set_icon_name('go-previous-inactive')
         else:
-            self._prev_button.set_icon('go-previous')
+            self._prev_button.set_icon_name('go-previous')
         if self.i == len(self.slides) - 1:
-            self._next_button.set_icon('go-next-inactive')
+            self._next_button.set_icon_name('go-next-inactive')
         else:
-            self._next_button.set_icon('go-next')
+            self._next_button.set_icon_name('go-next')
 
         pixbuf = self.slides[self.i].pixbuf
         if pixbuf is not None:
@@ -544,8 +544,8 @@ class BBoardActivity(activity.Activity):
             self._thumbnail_mode = True
             self._clear_screen()
 
-            self._prev_button.set_icon('go-previous-inactive')
-            self._next_button.set_icon('go-next-inactive')
+            self._prev_button.set_icon_name('go-previous-inactive')
+            self._next_button.set_icon_name('go-next-inactive')
 
             n = int(ceil(sqrt(len(self.slides))))
             if n > 0:
@@ -583,16 +583,14 @@ class BBoardActivity(activity.Activity):
                                             self.slides[i].colors)), i=1)
         self._thumbs[i][0].set_layer(TOP)
 
-    def _expose_cb(self, win, event):
-        ''' Callback to handle window expose events '''
-        self.do_expose_event(event)
-        return True
+    def __draw_cb(self,_canvas,cr):
+        self.sprites.redraw_sprites(cr=cr)
 
     # Handle the expose-event by drawing
     def do_expose_event(self, event):
 
         # Create the cairo context
-        cr = self.canvas.window.cairo_create()
+        cr = self._canvas.window.cairo_create()
 
         # Restrict Cairo to the exposed area; avoid extra work
         cr.rectangle(event.area.x, event.area.y,
@@ -614,10 +612,10 @@ class BBoardActivity(activity.Activity):
         ''' Hide the Sugar toolbars. '''
         self.fullscreen()
 
-    def invalt(self, x, y, w, h):
+    def invalt(self,x,y,w,h):
         ''' Mark a region for refresh '''
-        self._canvas.window.invalidate_rect(
-            (int(x), int(y), int(w), int(h)), False)
+        self.sel_rect=Gdk.Rectangle(int(x),int(y),int(w),int(h))
+        self._canvas.get_property('window').invalidate_rect(self.sel_rect, False)
 
     def _spr_to_thumb(self, spr):
         ''' Find which entry in the thumbnails table matches spr. '''
@@ -722,7 +720,7 @@ class BBoardActivity(activity.Activity):
             _logger.debug('recording...True. Preparing to save.')
             self._grecord.stop_recording_audio()
             self._recording = False
-            self._record_button.set_icon('media-record')
+            self._record_button.set_icon_name('media-record')
             self._record_button.set_tooltip(_('Start recording'))
             _logger.debug('Autosaving recording')
             self._notify(title=_('Save recording'))
@@ -731,7 +729,7 @@ class BBoardActivity(activity.Activity):
             _logger.debug('recording...False. Start recording.')
             self._grecord.record_audio()
             self._recording = True
-            self._record_button.set_icon('media-recording')
+            self._record_button.set_icon_name('media-recording')
             self._record_button.set_tooltip(_('Stop recording'))
 
     def _wait_for_transcoding_to_finish(self, button=None):
@@ -887,7 +885,8 @@ class BBoardActivity(activity.Activity):
         owner = self._collab._leader
         self.owner = owner
         self.buddies = [owner]
-        
+        self.waiting= True
+
         #Let the sharer know the joiner is available
         if self.waiting:
            self._send_event("j", profile.get_nick_name())
