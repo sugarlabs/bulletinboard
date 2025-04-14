@@ -8,87 +8,90 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-06-28 17:37-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2025-04-14 13:22+0000\n"
+"Last-Translator: NF <rkavt@smartprojects.ge>\n"
+"Language-Team: Georgian <http://weblate.sugarlabs.org/projects/"
+"sugar-activities/bulletin-board/ka/>\n"
 "Language: ka\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.4.2\n"
 
 #: activity/activity.info:2 BBoardActivity.py:757
 msgid "Bulletin Board"
-msgstr ""
+msgstr "განცხადებების დაფა"
 
 #: exportpdf.py:65
 msgid "untitled"
-msgstr ""
+msgstr "უსათაურო"
 
 #: BBoardActivity.py:285 BBoardActivity.py:355
 msgid "Record a sound"
-msgstr ""
+msgstr "ხმის ჩაწერა"
 
 #: BBoardActivity.py:295
 msgid "Page"
-msgstr ""
+msgstr "გვერდი"
 
 #: BBoardActivity.py:297
 msgid "Record"
-msgstr ""
+msgstr "ჩაწერა"
 
 #: BBoardActivity.py:304
 msgid "Prev slide"
-msgstr ""
+msgstr "წინა სლაიდი"
 
 #: BBoardActivity.py:308
 msgid "Next slide"
-msgstr ""
+msgstr "შემდეგი სლაიდი"
 
 #: BBoardActivity.py:315
 msgid "Slide view"
-msgstr ""
+msgstr "სლაიდშოუ"
 
 #: BBoardActivity.py:318
 msgid "Thumbnail view"
-msgstr ""
+msgstr "მინიატურის ხედი"
 
 #: BBoardActivity.py:322
 msgid "Fullscreen"
-msgstr ""
+msgstr "სრულეკრანზე"
 
 #: BBoardActivity.py:329
 msgid "Update description"
-msgstr ""
+msgstr "აღწერის განახლება"
 
 #: BBoardActivity.py:353
 msgid "Refresh"
-msgstr ""
+msgstr "განახლება"
 
 #: BBoardActivity.py:358 BBoardActivity.py:726
 msgid "Start recording"
-msgstr ""
+msgstr "ჩაწერის დაწყება"
 
 #: BBoardActivity.py:375 BBoardActivity.py:380
 msgid "Save as PDF"
-msgstr ""
+msgstr "PDF-ად შენახვა"
 
 #: BBoardActivity.py:439
 msgid "Bboard"
-msgstr ""
+msgstr "Bboard"
 
 #: BBoardActivity.py:482
 msgid "Do you have any items in your Journal starred?"
-msgstr ""
+msgstr "გაქვთ ვარსკვლავიანი ელემენტები ჟურნალში?"
 
 #: BBoardActivity.py:526 BBoardActivity.py:772
 #, python-format
 msgid "Audio recording by %s"
-msgstr ""
+msgstr "აუდიოჩანაწერის ავტორია %s"
 
 #: BBoardActivity.py:728
 msgid "Save recording"
-msgstr ""
+msgstr "ჩანაწერის შენახვა"
 
 #: BBoardActivity.py:735
 msgid "Stop recording"
-msgstr ""
+msgstr "ჩაწერის გაჩერება"
